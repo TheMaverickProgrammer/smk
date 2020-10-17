@@ -14,6 +14,7 @@
 #include <smk/OpenGL.hpp>
 #include <smk/View.hpp>
 #include <smk/Window.hpp>
+#include <smk/Rectangle.hpp>
 #include <thread>
 #include <vector>
 
@@ -107,10 +108,34 @@ void GLFWCharCallback(GLFWwindow* glfw_window, unsigned int codepoint) {
 
 }  // namespace
 
-glm::vec2 smk::Window::ToScreenSpace(const glm::vec2& world) {
-  glm::vec2 factor = glm::vec2(initialSize_.x/width_, initialSize_.y/height_);
-  return glm::vec2(world.x*factor.x, world.y*factor.y);
+// namespace smk
+
+glm::vec2 smk::Window::MapPixelToCoords(const glm::vec2& point) const {
+  return MapPixelToCoords(point, GetView());
 }
+
+glm::vec2 smk::Window::MapPixelToCoords(const glm::vec2& point, const smk::View& view) const {
+  glm::vec2 normal;
+  smk::Rectangle viewport = GetViewport(view);
+  normal.x = -1.f + 2.f * (point.x - viewport.left) / viewport.width();
+  normal.y = 1.f - 2.f * (point.y - viewport.top) / viewport.height();
+
+  glm::mat4 invtransform = view.GetInverseTransform();
+
+  return {invtransform[0][0] * normal.x + invtransform[1][0] * normal.y + invtransform[3][0],
+          invtransform[1][1] * normal.x + invtransform[1][1] * normal.y + invtransform[3][1]};
+}
+smk::Rectangle smk::Window::GetViewport(const smk::View& view) const {
+  smk::Rectangle viewport = view.GetViewport();
+
+  return smk::Rectangle{
+      0.5f + width_ * viewport.left,
+      0.5f + height_ * viewport.top,
+      0.5f + width_ * viewport.width(),
+      0.5f + height_ * viewport.height(),
+  };
+}
+ 
 
 /// @brief A null window.
 Window::Window() {
@@ -128,7 +153,6 @@ Window::Window(int width, int height, const std::string& title) {
   window_by_id[id_] = this;
   width_ = width;
   height_ = height;
-  initialSize_ = {width, height};
 
   glfwSetErrorCallback(GLFWErrorCallback);
   // initialize the GLFW library
@@ -225,7 +249,6 @@ void Window::operator=(Window&& other) {
   std::swap(input_, other.input_);
   std::swap(id_, other.id_);
   std::swap(module_canvas_selector_, other.module_canvas_selector_);
-  std::swap(initialSize_, other.initialSize_);
   window_by_id[id_] = this;
   window_by_glfw_window[window_] = this;
 }
@@ -312,6 +335,11 @@ void Window::UpdateDimensions() {
 #endif
 
   if (width != width_ || height != height_) {
+    //smk::Rectangle viewport = GetViewport(view_);
+    //int top = height_ - (viewport.top + viewport.height());
+    //glViewport(viewport.left, top, viewport.width(), viewport.height());
+    //SetView(view_);
+
     glViewport(0, 0, width_, height_);
     SetView(view_);
   }

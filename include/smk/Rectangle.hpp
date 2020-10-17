@@ -6,14 +6,15 @@
 #define SMK_RECTANGLE
 
 #include <glm/glm.hpp>
+#include <algorithm>
 
 namespace smk {
 
 struct Rectangle {
-  float left;
-  float top;
-  float right;
-  float bottom;
+  float left{0};
+  float top{0};
+  float right{1};
+  float bottom{1};
 
   float width() const { return right - left; }
   float height() const { return bottom - top; }

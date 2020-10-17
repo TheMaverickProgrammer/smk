@@ -7,6 +7,8 @@
 #include <smk/Font.hpp>
 #include <smk/Input.hpp>
 #include <smk/Shader.hpp>
+#include <smk/Sprite.hpp>
+#include <smk/Framebuffer.hpp>
 #include <smk/Text.hpp>
 #include <smk/Window.hpp>
 
@@ -54,6 +56,8 @@ int main() {
   auto window = smk::Window(640, 640, "smk/example/text");
   auto font = smk::Font(asset::arial_ttf, 48);
 
+  smk::Framebuffer screen(640, 640);
+
   const float margin = 20.f;
 
   smk::Shader vertex_shader;
@@ -83,12 +87,35 @@ int main() {
     if (!program.LinkStatus())
       exit(EXIT_FAILURE);
 
-    window.SetShaderProgram(&program);
+    screen.SetShaderProgram(&program);
   };
 
   auto draw = [&] {
     auto text = smk::Text(font, "Click to synchronously\ncompile a new shader");
+    text.SetColor(smk::Color::Red);
     text.SetPosition(margin, margin);
+    screen.Draw(text);
+
+    smk::Texture copyScreen = screen.color_texture;
+
+    // std::cout << "copyScreen texture ID is " << std::to_string(copyScreen.id()) << std::endl;
+    // std::cout << "copyScreen texture width: " << std::to_string(copyScreen.width()) 
+    //  << ", height: " << std::to_string(copyScreen.height()) << std::endl;
+
+    smk::Sprite screenSprite(copyScreen);
+    auto rect = screenSprite.GetTextureRectangle();
+
+    /*std::cout << "copyScreen SPRITE width: "
+              << std::to_string(rect.width())
+              << ", height: " << std::to_string(rect.height())
+              << std::endl;*/
+
+    // screenSprite.SetOrigin(0.5f, 0.f);
+    //screenSprite.SetScaleY(-1.0f);  // flip upside-down
+    screenSprite.SetPosition({320, 0});
+    
+    window.Clear(smk::Color::White);
+    window.Draw(screenSprite);
     window.Draw(text);
   };
 
@@ -98,6 +125,7 @@ int main() {
 
     step();
     draw();
+
 
     window.Display();
   });

@@ -35,7 +35,7 @@ class RenderTarget {
 
   // 1. Set the view
   void SetView(const View& view);
-  void SetView(const glm::mat4& mat);
+  //void SetView(const glm::mat4& mat);
   const View& GetView() const;
 
   // 2. Set a shader to render elements.
@@ -63,7 +63,6 @@ class RenderTarget {
   int height_ = 0;
 
   // View:
-  glm::mat4 projection_matrix_;
   smk::View view_;
 
   // Shaders:
@@ -76,7 +75,7 @@ class RenderTarget {
   std::unique_ptr<ShaderProgram> shader_program_3d_;
 
   // Current shader program.
-  ShaderProgram* shader_program_;
+  ShaderProgram* shader_program_{nullptr};
 
   GLuint frame_buffer_ = 0;
 };

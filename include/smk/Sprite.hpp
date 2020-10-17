@@ -32,6 +32,9 @@ class Framebuffer;
 /// window.Draw(sprite);
 /// ~~~
 class Sprite : public Transformable {
+ private:
+  Rectangle cachedRectangle{};
+
  public:
   Sprite() = default;
   Sprite(const Texture& texture);
@@ -47,6 +50,7 @@ class Sprite : public Transformable {
   // Modify the sprite.
   void SetTexture(const Texture& texture);
   void SetTextureRectangle(const Rectangle& rectangle);
+  Rectangle GetTextureRectangle() const;
 };
 
 }  // namespace smk

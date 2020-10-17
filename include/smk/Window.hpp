@@ -55,7 +55,12 @@ class Window : public RenderTarget {
   // Returns true when the user wants to close the window.
   bool ShouldClose();
 
-  glm::vec2 ToScreenSpace(const glm::vec2& world);
+  glm::vec2 MapPixelToCoords(const glm::vec2& world) const;
+
+  glm::vec2 MapPixelToCoords(const glm::vec2& point,
+                             const smk::View& view) const;
+
+  smk::Rectangle GetViewport(const smk::View& view) const;
 
   // Move-only ressource.
   Window(Window&&);
@@ -65,7 +70,6 @@ class Window : public RenderTarget {
 
  private:
   GLFWwindow* window_ = nullptr;
-  glm::vec2 initialSize_{}; // of the window
 
   // Time:
   float time_ = 0.f;

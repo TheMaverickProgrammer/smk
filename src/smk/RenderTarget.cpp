@@ -47,7 +47,6 @@ RenderTarget::RenderTarget(RenderTarget&& other) {
 void RenderTarget::operator=(RenderTarget&& other) {
   std::swap(width_, other.width_);
   std::swap(height_, other.height_);
-  std::swap(projection_matrix_, other.projection_matrix_);
   std::swap(view_, other.view_);
   std::swap(vertex_shader_2d_, other.vertex_shader_2d_);
   std::swap(fragment_shader_2d_, other.fragment_shader_2d_);
@@ -73,22 +72,14 @@ void RenderTarget::Clear(const glm::vec4& color) {
 /// @param view: The view to use.
 void RenderTarget::SetView(const View& view) {
   view_ = view;
-  float z_x = +2.0 / view.width_;   // [0, width]  -> [-1,1]
-  float z_y = -2.0 / view.height_;  // [0, height] -> [-1,1]
-  float t_x = -view.x_ * z_x;
-  float t_y = -view.y_ * z_y;
-  SetView(glm::mat4(z_x, 0.0, 0.0, 0.0,    //
-                    0.0, z_y, 0.0, 0.0,    //
-                    0.0, 0.0, 1.0, 0.0,    //
-                    t_x, t_y, 0.0, 1.0));  //
 }
 
 /// @brief Set the View to use.
 /// @param mat: The matrix to transform from/to the OpenGL space [-1,1]^3 to the
 ///             screen space.
-void RenderTarget::SetView(const glm::mat4& mat) {
-  projection_matrix_ = mat;
-}
+/*void RenderTarget::SetView(const glm::mat4& mat) {
+  view_ = smk::View(mat);
+}*/
 
 /// @brief Return the View currently assigned to this RenderTarget.
 const View& RenderTarget::GetView() const {
@@ -137,6 +128,11 @@ const View& RenderTarget::GetView() const {
 /// ~~~
 void RenderTarget::SetShaderProgram(ShaderProgram* shader_program) {
   shader_program_ = shader_program;
+
+  if (!shader_program) {
+    shader_program_ = shader_program_2d_.get();
+  }
+
   shader_program_->Use();
   shader_program_->SetUniform("texture_0", 0);
   shader_program_->SetUniform("color", glm::vec4(1.0, 1.0, 1.0, 1.0));
@@ -161,7 +157,7 @@ void RenderTarget::Draw(const Drawable& drawable) {
   Bind(this);
   RenderState state;
   state.shader_program = shader_program_;
-  state.view = glm::mat4(1.0);
+  state.view = glm::mat4(1); // view_.GetTransform();
   state.color = smk::Color::White;
   state.blend_mode = smk::BlendMode::Alpha;
   drawable.Draw(*this, state);
@@ -189,7 +185,7 @@ void RenderTarget::Draw(const RenderState& state) {
   }
 
   // View (not cached)
-  state.shader_program->SetUniform("projection", projection_matrix_);
+  state.shader_program->SetUniform("projection", glm::mat4(1));
   state.shader_program->SetUniform("view", state.view);
 
   // Texture

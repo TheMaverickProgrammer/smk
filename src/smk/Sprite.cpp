@@ -57,6 +57,8 @@ void Sprite::SetTexture(const Texture& texture) {
 /// @param texture The Texture to be displayed.
 /// @param rectangle A rectangle in the texture to be used.
 void Sprite::SetTextureRectangle(const Rectangle& rectangle) {
+  this->cachedRectangle = rectangle;
+
   float l = (rectangle.left + 0.5) / texture().width();
   float r = (rectangle.right - 0.5) / texture().width();
   float t = (rectangle.top + 0.5) / texture().height();
@@ -71,6 +73,10 @@ void Sprite::SetTextureRectangle(const Rectangle& rectangle) {
       {{www, hhh}, {r, b}},
       {{www, 0.f}, {r, t}},
   })));
+}
+
+Rectangle Sprite::GetTextureRectangle() const {
+  return cachedRectangle;
 }
 
 }  // namespace smk
